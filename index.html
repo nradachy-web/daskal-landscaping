@@ -430,6 +430,10 @@
           </div>
         </div>
         <form class="contact__form" id="contactForm">
+          <input type="hidden" name="access_key" value="0a0a5295-c992-412d-82f9-05dc33d00a88">
+          <input type="hidden" name="subject" value="New Estimate Request — Daskal Landscaping">
+          <input type="hidden" name="from_name" value="Daskal Landscaping Website">
+          <input type="checkbox" name="botcheck" style="display:none">
           <h3 class="contact__form-title">Request Your Free Estimate</h3>
           <div class="form-row">
             <div class="form-group"><label for="firstName">First Name</label><input type="text" id="firstName" name="firstName" placeholder="John" required autocomplete="given-name"></div>
@@ -505,8 +509,25 @@
     // Header shadow
     window.addEventListener('scroll',()=>header.classList.toggle('header--scrolled',window.scrollY>20));
 
-    // Form
-    document.getElementById('contactForm').addEventListener('submit',function(e){e.preventDefault();const b=this.querySelector('button[type="submit"]'),o=b.innerHTML;b.innerHTML='Sending...';b.disabled=true;gtag('event','form_submit',{event_label:'contact_form',service:document.getElementById('service').value});setTimeout(()=>{b.innerHTML='&#10003; Request Sent!';b.classList.add('btn--success');setTimeout(()=>{b.innerHTML=o;b.disabled=false;b.classList.remove('btn--success');this.reset()},3000)},1000)});
+    // Form — Web3Forms
+    document.getElementById('contactForm').addEventListener('submit',async function(e){
+      e.preventDefault();
+      const b=this.querySelector('button[type="submit"]'),o=b.innerHTML;
+      b.innerHTML='Sending...';b.disabled=true;
+      gtag('event','form_submit',{event_label:'contact_form',service:document.getElementById('service').value});
+      try{
+        const res=await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))});
+        const data=await res.json();
+        if(data.success){
+          b.innerHTML='&#10003; Request Sent!';b.classList.add('btn--success');
+          this.reset();
+          setTimeout(()=>{b.innerHTML=o;b.disabled=false;b.classList.remove('btn--success')},3000);
+        }else{throw new Error(data.message||'Something went wrong');}
+      }catch(err){
+        b.innerHTML='&#10007; Error — Try Again';b.classList.add('btn--error');
+        setTimeout(()=>{b.innerHTML=o;b.disabled=false;b.classList.remove('btn--error')},3000);
+      }
+    });
   </script>
 </body>
 </html>
